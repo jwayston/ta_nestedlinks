@@ -1,0 +1,29 @@
+{
+  "appVersion" : "1.8.0",
+  "authors" : [
+    {
+      "name" : "JW"
+    }
+  ],
+  "dependencies" : [
+
+  ],
+  "description" : "Extracts and nests outgoing links for the link detected within a selection\n",
+  "identifier" : "com.idonthavedomain.nestedlinks",
+  "input" : {
+    "notes" : [
+      "selected",
+      "all"
+    ],
+    "pasteboard" : false,
+    "text" : [
+      "selected"
+    ]
+  },
+  "output" : {
+    "insertText" : true
+  },
+  "releaseDate" : "2026-02-24",
+  "title" : "Nested outgoing links extractor",
+  "version" : "0.0.1"
+}
