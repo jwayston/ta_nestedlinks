@@ -7,136 +7,46 @@ Author: JW
 
 "use strict";
 
-const INDENT = 2;
-const regexWikilinks = new RegExp(/(\[\[.*?\]\])/g);
-const regexWikilinkTarget = new RegExp(/\[\[(.*?)\]\]/);
-const regexIndent = new RegExp(/^(\s+)/);
+const uidSet = new Set();
+const selected = input.text.selected;
 
-/* 
-+------------------------------------------------------------------------------+
-|                             <header extraction>                              |
-+------------------------------------------------------------------------------+
-*/
-const currentNote = input.notes.selected[0].filename;
-const regexIdDesc = new RegExp(/([0-9]{12,}|[0-9]{6,}.*?(?=\s|$)|.*?(?=\s|$))\s?(.*)/);
-const regexNoteHeader = new RegExp("(?<=^|\\n)# (.+)\\n");
+const getHeader = content => 
+    content.match(/(?:^|\n)# (.+)/)?.[1] ?? "<No H1 header>";
 
-function extractHeader(noteContent)
-{
-    const headerMatch = noteContent.match(regexNoteHeader);
-    return !headerMatch ? "<No H1 header detected>" : headerMatch[1];
+const getNoteData = (filename, content) => {
+    const [_, id, desc] = filename.match(/^(\d{6,}\S*)\s*(.*)/) ?? [];
+    return id ? { id, desc: desc.trim() || getHeader(content) } : null;
 }
 
-function extractNoteHeaderLinkPair(linkText, excludeFilePattern)
-{
-    let matchIdDesc;
-    let noteFound = false;
-    const searchBestMatch = app.search(linkText).bestMatch;
-
-    if (searchBestMatch)
-        if(!searchBestMatch.filename.match(excludeFilePattern))
-            noteFound = true;
-
-    if (noteFound)
-        matchIdDesc = searchBestMatch.filename.match(regexIdDesc);
-    else
-        return null;
-
-    if (!matchIdDesc)
-        return `<Error: cannot extract any remotely ID-like from the link> ${selection}`;
-
-    const id = matchIdDesc[1];
-    const desc = matchIdDesc[2];
-
-    if (!desc && noteFound)
-        return `${extractHeader(searchBestMatch.content)} [[${id}]]`;
-
-    return `${desc} [[${id}]]`;
+const findNote = id => {
+    const m = app.search(id, false).bestMatch;
+    return m?.filename.startsWith(id) && m;
 }
-/* 
-+------------------------------------------------------------------------------+
-|                             </header extraction>                             |
-+------------------------------------------------------------------------------+
-*/
+const extractLink = text => text.match(/\[\[(.*?)\]\]/)?.[1];
+const getOutLinks = content => content.match(/(?<=\[\[).+?(?=\]\])/g) ?? [];
 
-function getIndent(text)
-{
-    const indentMatch = text.match(regexIndent);
-    return !indentMatch ? "" : indentMatch[1];
-}
-
-function extractLinkTarget(text)
-{
-    const linkMatch = text.match(regexWikilinkTarget);
-    return !linkMatch ? linkMatch : linkMatch[1];
-}
-
-function findOutgoingLinks(noteId, excludeNoteId)
-{
-    const note = app.search(noteId, false).bestMatch;
-    if (!note)
-        return null;
-
-    const matchOutgoingLinks = note.content.match(regexWikilinks);
-    return !matchOutgoingLinks ? null : matchOutgoingLinks;
-}
-
-function extractNestedOutgoingLinks(textLine, depth)
-{
-    if (depth === 0)
+const nest = (link, depth, indent) => {
+    let note;
+    if (depth < 0 || uidSet.has(link) || !(note = findNote(link)))
         return "";
 
-    let outputText = "";
-    const initialIndent = getIndent(textLine);
-    const linkTarget = extractLinkTarget(textLine);
+    uidSet.add(link);
+    const data = getNoteData(note.filename, note.content);
 
-    if (!linkTarget)
-        return `${textLine} <Couldn't extract link target>`;
+    const line = data
+        ? `${indent}- ${data.desc} [[${data.id}]]\n`
+        : `${indent}- <Error: Invalid ID> [[${link}]]\n`;
 
-    const outgoingLinks = findOutgoingLinks(linkTarget);
-    if (!outgoingLinks)
-        return outputText;
-
-    uidSet.add(linkTarget);
-
-    // Go through detected outgoing links
-    for (let outLink of outgoingLinks)
-    {
-        const outLinkTarget = extractLinkTarget(outLink);
-        const linkExpanded = extractNoteHeaderLinkPair(outLinkTarget, linkTarget);
-
-        // Do not repeat outgoing link if it was already shown before
-        if (uidSet.has(outLinkTarget))
-            continue;
-
-        // Skip non-working links
-        if (!linkExpanded)
-            continue;
-
-        const outputLine = `${initialIndent}${" ".repeat(INDENT)}- ${linkExpanded}\n`;
-        outputText += outputLine;
-        outputText += extractNestedOutgoingLinks(outputLine, depth - 1);
-        uidSet.add(outLinkTarget);
-    }
-
-    return outputText;
+    return line + getOutLinks(note.content)
+        .map(l => nest(l, depth - 1, `  ${indent}`))
+        .join("");
 }
 
+const depth = parseInt(app.prompt({title: "Depth", defaultValue: 4}));
+const root = extractLink(selected);
 
-let uidSet = new Set();  // Keep track of visited notes
-let outputText = input.text.selected;
+if (!(depth > 0) || !root) cancel("Invalid depth or link");
 
-const depth = parseInt(app.prompt({
-    title: "Depth",
-    description: "How many levels deep do you want to dive in?",
-    placeholder: "Depth",
-    defaultValue: 4
-}));
-
-if (!Number.isInteger(depth) || depth < 1)
-    cancel("Given depth was not a valid integer value");
-
-outputText += outputText.slice(-1) !== "\n" ? "\n" : "";
-outputText += extractNestedOutgoingLinks(input.text.selected, depth);
-output.insert.text = outputText;
+const out = nest(root, depth, "");
+output.insert.text = out;
 
