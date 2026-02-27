@@ -13,7 +13,7 @@ The motivator for making a change can be pain or creativity [[250215S8]]
 
 Output:
 ```
-The motivator for making a change can be pain or creativity [[250215S8]]
+- The motivator for making a change can be pain or creativity [[250215S8]]
   - Is the pursuit of order a sign of a need for control or a desire for aesthetic pleasure? [[250128I2]]
     - Art is the transformation of entropy into order [[250128IL]]
     - It would be more natural for humanity to accept disorder than to strive for artificial order [[25020600]]
