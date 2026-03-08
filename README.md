@@ -1,6 +1,6 @@
 # Nested outgoing links outline expander plugin for [The Archive](https://zettelkasten.de/the-archive/)
 
-Extracts and nests outgoing links for the link detected in a selection. Iterates until the given depth is reached.
+Expands and nests outgoing links for the link detected in a selection. Iterates until the given depth is reached.
 
 Link descriptions are derived from the filenames. If the filename consists of just a UID, the first detected H1 header will be used.
 
@@ -21,6 +21,10 @@ Output:
     - Associating evil with suffering can leave a person responsible for their own suffering [[250129NY]]
 
 ```
+
+## Caveats
+
+- Duplicate skipping is hardcoded. I.e. only first occurrence of a link is included in the result.
 
 ## Possible issues
 
