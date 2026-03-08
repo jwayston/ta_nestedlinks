@@ -1,4 +1,4 @@
-# Nested outgoing links outline extractor plugin for [The Archive](https://zettelkasten.de/the-archive/)
+# Nested outgoing links outline expander plugin for [The Archive](https://zettelkasten.de/the-archive/)
 
 Extracts and nests outgoing links for the link detected in a selection. Iterates until the given depth is reached.
 
