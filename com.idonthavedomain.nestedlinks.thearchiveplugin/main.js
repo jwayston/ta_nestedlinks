@@ -1,4 +1,4 @@
-/* Nested outgoing links extractor for "The Archive" app
+/* Nested outgoing links expander for "The Archive" app
 
 License: CC-BY-4.0
 Author: JW

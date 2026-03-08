@@ -8,7 +8,7 @@
   "dependencies" : [
 
   ],
-  "description" : "Extracts and nests outgoing links for the link found in a selection until the requested depth is reached\n",
+  "description" : "Expands and nests outgoing links for the link found in a selection until the requested depth is reached\n",
   "identifier" : "com.idonthavedomain.nestedlinks",
   "input" : {
     "notes" : [
@@ -24,6 +24,6 @@
     "insertText" : true
   },
   "releaseDate" : "2026-02-27",
-  "title" : "Extract nested outgoing links",
+  "title" : "Expand nested outgoing links",
   "version" : "0.1.1"
 }
